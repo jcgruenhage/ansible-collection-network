@@ -1,5 +1,4 @@
 ---
-
 - name: Validate resolvers use supported types
   ansible.builtin.fail:
     msg: >

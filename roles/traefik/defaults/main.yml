@@ -160,7 +160,6 @@ traefik_config_tls_default_strictsni: true
 
 traefik_config_tls_default_lax:
   lax: {}
-
 traefik_config_tls_default_nosni:
   nosni:
     minVersion: "VersionTLS12"

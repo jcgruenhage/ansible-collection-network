@@ -1,5 +1,4 @@
 ---
-
 - name: Create traefik cert directory
   ansible.builtin.file:
     path: "{{ traefik_cert_path }}"
@@ -23,7 +22,7 @@
 
 - name: Map certificates into container
   ansible.builtin.set_fact:
-    traefik_container_volumes: >-2
+    traefik_container_volumes: >-
       {{ traefik_container_volumes + [cert_mapping] }}
   vars:
     cert_mapping: "{{ traefik_cert_path }}:{{ traefik_cert_path }}:ro"

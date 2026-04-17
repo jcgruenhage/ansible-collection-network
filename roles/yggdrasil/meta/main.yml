@@ -17,7 +17,7 @@ galaxy_info:
         - stretch
         - buster
         - sid
-    - name: Fedora    # Depends on redhat-lsb-core
+    - name: Fedora # Depends on redhat-lsb-core
       versions:
         - 28
         - 29
@@ -31,5 +31,4 @@ galaxy_info:
         - any
 
   galaxy_tags: []
-
 dependencies: []

@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Jan Christian Grünhage <jan.christian@gruenhage.xyz>
   description: Deploys a containerized traefik instance
@@ -12,5 +13,4 @@ galaxy_info:
         - "all"
 
   galaxy_tags: []
-
 dependencies: []

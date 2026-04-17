@@ -1,12 +1,11 @@
 ---
-
 - name: Create user
   ansible.builtin.user:
     name: "{{ traefik_user }}"
     groups: docker
     append: true
   register: traefik_user_info
-  tags: ['prepare', 'prepare-traefik']
+  tags: ["prepare", "prepare-traefik"]
 
 - name: Create traefik base directory
   ansible.builtin.file:
@@ -15,7 +14,7 @@
     owner: "{{ traefik_base_path_owner | default(traefik_user_info.uid) }}"
     group: "{{ traefik_base_path_group | default(traefik_user_info.group) }}"
     mode: "{{ traefik_base_path_mode | default('0750') }}"
-  tags: ['prepare', 'prepare-traefik']
+  tags: ["prepare", "prepare-traefik"]
 
 - name: Create traefik config directory
   ansible.builtin.file:
@@ -24,7 +23,7 @@
     owner: "{{ traefik_config_path_owner | default(traefik_user_info.uid) }}"
     group: "{{ traefik_config_path_group | default(traefik_user_info.group) }}"
     mode: "{{ traefik_config_path_mode | default('0750') }}"
-  tags: ['prepare', 'prepare-traefik']
+  tags: ["prepare", "prepare-traefik"]
 
 - name: Add admin user to password file and ensure permissions are set
   community.general.htpasswd:
@@ -34,23 +33,23 @@
     owner: "{{ traefik_user_info.uid }}"
     group: "{{ traefik_user_info.group }}"
     mode: "0600"
-  tags: ['prepare', 'prepare-traefik']
+  tags: ["prepare", "prepare-traefik"]
   when: traefik_enable_api|bool and traefik_enable_api_authentication|bool
 
 - name: Deploy manually managed certificates
   ansible.builtin.include_tasks:
     file: manual-cert-management.yml
     apply:
-      tags: ['prepare', 'prepare-traefik']
+      tags: ["prepare", "prepare-traefik"]
   when: traefik_manual_tls_management_enabled|bool
-  tags: ['prepare', 'prepare-traefik']
+  tags: ["prepare", "prepare-traefik"]
 
 - name: Setup ACME
   ansible.builtin.include_tasks:
     file: acme.yml
     apply:
-      tags: ['prepare', 'prepare-traefik']
-  tags: ['prepare', 'prepare-traefik']
+      tags: ["prepare", "prepare-traefik"]
+  tags: ["prepare", "prepare-traefik"]
 
 - name: Template config file
   ansible.builtin.template:
@@ -61,7 +60,7 @@
     mode: "0640"
   notify:
     - "restart_traefik"
-  tags: ['deploy', 'deploy-traefik']
+  tags: ["deploy", "deploy-traefik"]
 
 - name: Template dynamic configurations
   ansible.builtin.template:
@@ -73,7 +72,7 @@
   loop: "{{ traefik_dynamic_configs }}"
   notify:
     - "restart_traefik"
-  tags: ['deploy', 'deploy-traefik']
+  tags: ["deploy", "deploy-traefik"]
 
 - name: Remove api-router configuration, when disabled
   ansible.builtin.file:
@@ -82,7 +81,7 @@
   notify:
     - "restart_traefik"
   when: not traefik_enable_api
-  tags: ['deploy', 'deploy-traefik']
+  tags: ["deploy", "deploy-traefik"]
 
 # https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
 - name: Set recommended UDP buffer sizes
@@ -102,7 +101,7 @@
   notify:
     - "restart_traefik"
   when: traefik_set_kernel_udp_buffer_size
-  tags: ['deploy', 'deploy-traefik']
+  tags: ["deploy", "deploy-traefik"]
 
 - name: Ensure traefik container image is present
   community.docker.docker_image:
@@ -114,12 +113,12 @@
   until: traefik_container_image_pulled is success
   retries: 10
   delay: 5
-  tags: ['prepare', 'prepare-traefik']
+  tags: ["prepare", "prepare-traefik"]
 
 - name: Ensure traefik container is running
   community.docker.docker_container:
     name: "{{ traefik_container_name }}"
-    image: '{{ traefik_container_image_reference }}'
+    image: "{{ traefik_container_image_reference }}"
     networks: "{{ traefik_container_networks | default(omit) }}"
     etc_hosts: "{{ traefik_container_etc_hosts }}"
     network_mode: "{{ traefik_container_network_mode }}"
@@ -129,9 +128,9 @@
     volumes: "{{ traefik_container_volumes }}"
     restart_policy: unless-stopped
     state: started
-#       TODO: Make running this as non-root work.
-#       user: "{{ traefik_user_info.uid }}:{{ traefik_user_info.group }}"
+    #       TODO: Make running this as non-root work.
+    #       user: "{{ traefik_user_info.uid }}:{{ traefik_user_info.group }}"
     healthcheck:
       test: >-
         wget --proxy off -q --spider http://{{ traefik_container_healthcheck_host }}:8022/ping
-  tags: ['deploy', 'deploy-traefik']
+  tags: ["deploy", "deploy-traefik"]

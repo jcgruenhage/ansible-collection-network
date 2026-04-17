@@ -1,5 +1,4 @@
 ---
-
 - name: Deploy fullchain to target host
   ansible.builtin.copy:
     dest: "{{ fullchain_path }}"
