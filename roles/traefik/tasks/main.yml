@@ -63,7 +63,7 @@
     - "restart_traefik"
   tags: ['deploy', 'deploy-traefik']
 
-- name: Template dynamic configurations for {{ item }}
+- name: Template dynamic configurations
   ansible.builtin.template:
     src: "{{ item }}.yml.j2"
     dest: "{{ traefik_dyn_config_path }}/{{ item }}.yml"
