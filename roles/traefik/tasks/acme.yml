@@ -103,11 +103,18 @@
 # acme.json holds the account and certificate private keys. diff: false is
 # enough here since copy never echoes content back, and unlike no_log it keeps
 # errors readable.
+# traefik serializes the file differently from to_nice_json, so the existing
+# bytes are kept whenever they already hold the wanted data.
 - name: Write acme.json to host
   ansible.builtin.copy:
-    content: "{{ traefik_acme_config | to_nice_json(indent=2) }}"
+    content: >-
+      {{ existing_acme_json
+         if existing_acme_json and existing_acme_json | from_json == traefik_acme_config
+         else traefik_acme_config | to_nice_json(indent=2) }}
     dest: "{{ traefik_base_path }}/acme.json"
     owner: traefik
     group: traefik
     mode: "0600"
+  vars:
+    existing_acme_json: "{{ existing_acme_config.content | b64decode if existing_acme_config.content is defined else '' }}"
   diff: false
