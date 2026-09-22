@@ -7,14 +7,14 @@ experimental:
   {% endif %}
 {% endif %}
 
-{%- set entrypoints = {} -%}
+{%- set ns = namespace(entrypoints={}) -%}
 {%- for entrypoint in traefik_entrypoints -%}
-  {%- if traefik_enable_http3 and entrypoint.name == 'web-secure' -%}
-    {%- do entrypoint.config.update({'http3': {}}) -%}
-  {%- endif -%}
-  {%- do entrypoints.update({entrypoint.name: entrypoint.config }) -%}
+  {%- set _config = entrypoint.config | combine(
+       {'http3': {}} if (traefik_enable_http3 and entrypoint.name == 'web-secure') else {}
+     ) -%}
+  {%- set ns.entrypoints = ns.entrypoints | combine({entrypoint.name: _config}) -%}
 {%- endfor -%}
-{{ ({'entryPoints': entrypoints }) | to_nice_yaml(indent=2) }}
+{{ ({'entryPoints': ns.entrypoints }) | to_nice_yaml(indent=2) }}
 
 ping:
   entryPoint: "ping"
