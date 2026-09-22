@@ -17,6 +17,9 @@
       fullchain: "{{ fullchain_path }}"
       privkey: "{{ privkey_path }}"
   loop: "{{ traefik_certs_to_deploy }}"
+  loop_control:
+    # items carry the private key, which would otherwise be printed per item
+    label: "{{ item.name }}"
 
 - name: Map certificates into container
   ansible.builtin.set_fact:

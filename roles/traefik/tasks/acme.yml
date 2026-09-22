@@ -71,6 +71,7 @@
     path: "{{ traefik_base_path }}/acme.json"
   when: acme_json_host.stat.exists
   register: existing_acme_config
+  no_log: true
 
 - name: Add cert resolver config
   ansible.builtin.set_fact:
@@ -91,13 +92,18 @@
   loop_control:
     loop_var: resolver
     label: "{{ resolver.slug }}"
+  no_log: true
 
 - name: Combine acme configs
   ansible.builtin.set_fact:
     traefik_acme_config: "{{ existing_acme_config_data | combine(traefik_cert_resolver_config | default({}), recursive=True) }}"
   vars:
     existing_acme_config_data: "{{ existing_acme_config.content | b64decode | from_json if existing_acme_config.content is defined else {} }}"
+  no_log: true
 
+# acme.json holds the account and certificate private keys. diff: false is
+# enough here since copy never echoes content back, and unlike no_log it keeps
+# errors readable.
 - name: Write acme.json to host
   ansible.builtin.copy:
     content: "{{ traefik_acme_config | to_nice_json(indent=2) }}"
@@ -105,3 +111,4 @@
     owner: traefik
     group: traefik
     mode: "0600"
+  diff: false
