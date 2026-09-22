@@ -1,26 +1,55 @@
 ---
-- name: Install apt key deps
+- name: Install deb822_repository deps
   ansible.builtin.apt:
-    name: dirmngr
+    name: python3-debian
   register: task_result
   until: task_result is success
   retries: 3
   delay: 2
 
-- name: Add apt key
-  ansible.builtin.apt_key:
-    state: present
-    url: https://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/key.txt
-    id: 569130E8CA20FBC4CB3FDE555898470A764B32C9
-  register: task_result
-  until: task_result is success
-  retries: 3
-  delay: 2
+- name: Remove the apt source previously added by apt_repository
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/neilalexander_s3_eu_west_2_amazonaws_com_deb.list
+    state: absent
 
 - name: Add apt repository
-  ansible.builtin.apt_repository:
-    repo: deb http://neilalexander.s3.eu-west-2.amazonaws.com/deb/ debian yggdrasil
-    state: present
+  ansible.builtin.deb822_repository:
+    name: yggdrasil
+    types: deb
+    uris: http://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/
+    suites: debian
+    components: yggdrasil
+    # 1C5162E133015D81A811239D1840CDAC6011C5EA, issued 2025-11-11
+    signed_by: |
+      -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+      mQINBGkTyEcBEADdKz9y2Afued5eHDmoDbemBbZUmC8u4nboBOLFT8lFT6i5IPbx
+      7npZOSIa5HCJDk2jL1JiSJTqYLx9IhYio6bmNjbiWExO67ctN7/LIbCo+/kSZen5
+      eKy4j0YtAAahCVax6ttZWur/Cn7Ha6sD9gDm5pQibkTZsIqlGcjGVXEbWohcmj/R
+      p4TRBGZOmVCHSascQpsXvwGp716beiKzzFs6PqR4PYZbTaDr82aySvxAoSXg4xA0
+      oDggz2YGKwXO3wM5OY8+U5uiA71437JvQKpKc5qa4YBbjp6BUmSbuCH1SV48zX0c
+      ETySU1yAvMMDiTacUZpZlv8ck/WNYai6WFIrgjui0T7pd23AUbtW+F1n3lHfvmYW
+      1f/h2vKyOHyapFXsgMLZX/mw0HaipIY+BYQwyVCihnjW/DPVhOAz4c2aC+QrAt+0
+      o8oqP/4sgBhTZ+wuGjLZYoiv9AyXRHaoCL0Ljrxl1fLE48ZM2Rn10VkFZp2HAfuW
+      lOqTEDwFtZcxi+rQJWowXIn9uWyZFKPRRRktErCMmVAhkgXYWzRvtHlwvYYhSAru
+      kPeCHTsp/s/VhVAId1PqvmLtXt7oXdwdaXZUMOd4C0fC9g4XtZiWRoVMm9YLplQW
+      b/3ypp+jpEhmKj3dqPR/dBI8iDu8qU4U2EbrCIvYuhh3FoQzF0E36hLPyQARAQAB
+      tDBOZWlsIEFsZXhhbmRlciA8eWdnZHJhc2lscmVwb0BuZWlsYWxleGFuZGVyLmRl
+      dj6JAk4EEwEIADgWIQQcUWLhMwFdgagRI50YQM2sYBHF6gUCaRPIRwIbAwULCQgH
+      AgYVCgkICwIEFgIDAQIeAQIXgAAKCRAYQM2sYBHF6nNoD/0cxxjWM8QLb/47ZGdM
+      7rBHLhEn0PZ/VNHUDH5OIekOB28BsLnFCuxXPhwLHE+b1hMJ2ZtWDZx+NOSlB9fS
+      7GLYkngXG1Lp6E/oljqEl/C9EEctEqiIkLZcQkhd+1l/ptFGByHS8YZe42o3X4d4
+      qhjV0wNrFtDW3vqHJcLYRlllDbl1VqkfcaV09sW/KGiMNm7sYKnryqXDoMyv2FTO
+      WCtNJViXwONUiymPjCisbFRF866B2lVt3f19Sw/xX22EyC+gFVsQfKuNoYsNJZkw
+      8HFfptJmT1mZhGFVs94Cdahawsr6T3TIrOvTxIa0quhDIVNynREOTFOAyiY307lR
+      cAn+V3NdywBGmLV9GTHGLkklMIH9VXkCkcK4gZhHo45wEUKt0V2NbPtwYT4xO6sK
+      XW/Z6zorwDpqfnEHNlBH8d6lUKCIwaTewsMF2tBzY+NWFde5oytAqhKVMqdo3Qc+
+      cLm1M7IWYPc4CkHdOSlbwWyvV+aVfIAFpTBwVYo9B+4eqsiNsssAh/LUA6ZrGNlB
+      owmTxFlHmlb2+cVSAagSdxKtS/nOZXPdne5NH/n4BrQ+/WTrMvuxragkAmi5GAPo
+      40hzLznPwmu9KYKUkUOeW5/GsTLaAQa8OJ3eHwuI6K8yJXyO7UZUJZNvAp7spIRj
+      VIiZLpbd6AIMMmdF28j523XqHg==
+      =zLeq
+      -----END PGP PUBLIC KEY BLOCK-----
   register: task_result
   until: task_result is success
   retries: 3
@@ -29,6 +58,7 @@
 - name: Install yggdrasil
   ansible.builtin.apt:
     name: yggdrasil
+    update_cache: true
   register: task_result
   until: task_result is success
   retries: 3
